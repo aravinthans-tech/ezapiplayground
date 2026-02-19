@@ -33,12 +33,8 @@ public class ApiKeyController : ControllerBase
 
         try
         {
-            var configPath = Path.Combine(Directory.GetCurrentDirectory(), "appsettings.json");
-            var json = System.IO.File.ReadAllText(configPath);
-            JObject appSettings = JObject.Parse(json);
-
-            string connectionString = appSettings["ConnectionStrings"]?["eZApiTenantContext"]?.ToString() 
-                ?? _configuration.GetConnectionString("eZApiTenantContext");
+            // Use IConfiguration which supports environment variables in production
+            string connectionString = _configuration.GetConnectionString("eZApiTenantContext");
 
             if (string.IsNullOrEmpty(connectionString))
             {
@@ -151,12 +147,8 @@ public class ApiKeyController : ControllerBase
 
         try
         {
-            var configPath = Path.Combine(Directory.GetCurrentDirectory(), "appsettings.json");
-            var json = System.IO.File.ReadAllText(configPath);
-            JObject appSettings = JObject.Parse(json);
-
-            string connectionString = appSettings["ConnectionStrings"]?["eZApiTenantContext"]?.ToString() 
-                ?? _configuration.GetConnectionString("eZApiTenantContext");
+            // Use IConfiguration which supports environment variables in production
+            string connectionString = _configuration.GetConnectionString("eZApiTenantContext");
 
             if (string.IsNullOrEmpty(connectionString))
             {
