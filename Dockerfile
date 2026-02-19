@@ -32,9 +32,8 @@ COPY --from=publish /app/publish .
 # Copy static files (wwwroot) - Removed: Frontend is now separate React app
 # COPY wwwroot ./wwwroot
 
-# Copy configuration files
-COPY appsettings.json .
-COPY appsettings.Development.json .
+# Note: appsettings.json files are not copied - use environment variables in production
+# Configuration is provided via environment variables in Render dashboard
 
 # Expose port 8080 (Render default)
 EXPOSE 8080
