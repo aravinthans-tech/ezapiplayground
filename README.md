@@ -228,9 +228,56 @@ If you see CORS errors, ensure:
 3. Ensure CORS is properly configured in backend
 4. Check browser console for detailed error messages
 
+## Deployment
+
+### Backend Deployment (Render)
+
+1. **GitHub Repository**: `aravinthans-tech/ezapiplayground`
+2. **Go to Render Dashboard**: https://render.com
+3. **Create New Web Service**:
+   - Connect GitHub repository: `aravinthans-tech/ezapiplayground`
+   - Name: `ezapiplayground`
+   - Environment: **Docker**
+   - Build Command: (auto-detected from Dockerfile)
+   - Start Command: `dotnet QRCodeAPI.dll`
+4. **Set Environment Variables** in Render dashboard:
+   - `ASPNETCORE_ENVIRONMENT=Production`
+   - `ASPNETCORE_URLS=http://+:8080`
+   - `ConnectionStrings__eZApiTenantContext=<your-connection-string>`
+   - `ExternalApis__GoogleMaps__ApiKey=<your-google-maps-key>`
+   - `ExternalApis__OpenRouter__ApiKey=<your-openrouter-key>`
+   - `ExternalApis__Unstract__ApiKey=<your-unstract-key>`
+   - `ExternalApis__AwsRekognition__AccessKey=<your-aws-access-key>`
+   - `ExternalApis__AwsRekognition__SecretKey=<your-aws-secret-key>`
+   - `ExternalApis__AwsRekognition__Region=ap-south-1`
+   - `ApiKeys__ValidKeys__0=<your-api-key-1>`
+   - `ApiKeys__ValidKeys__1=<your-api-key-2>`
+5. **Deploy** and note your backend URL (e.g., `https://ezapiplayground.onrender.com`)
+
+### Frontend Deployment (Vercel)
+
+1. **GitHub Repository**: `aravinthans-tech/ezplaygroundapp`
+2. **Go to Vercel Dashboard**: https://vercel.com
+3. **Import Project**:
+   - Connect GitHub repository: `aravinthans-tech/ezplaygroundapp`
+   - Framework Preset: **Create React App**
+   - Root Directory: `.` (root of repository)
+   - Build Command: `npm run build`
+   - Output Directory: `build`
+4. **Set Environment Variable**:
+   - `REACT_APP_API_BASE_URL`: Your Render backend URL (from step above)
+5. **Deploy** and note your frontend URL (e.g., `https://ezplaygroundapp.vercel.app`)
+
+### Post-Deployment
+
+1. **Update Backend CORS**: After getting your Vercel URL, update `Program.cs` CORS policy to include your actual Vercel URL
+2. **Commit and Push**: Push the CORS update to trigger Render auto-deployment
+3. **Test**: Verify the frontend can communicate with the backend
+
 ## Development Notes
 
 - The backend runs independently as a pure API
 - The frontend runs independently and makes HTTP requests to the backend
 - Both can be deployed separately
 - The `wwwroot` directory contains the original HTML files (archived for reference)
+- **Important**: `appsettings.json` is excluded from git for security. Use environment variables in production.
