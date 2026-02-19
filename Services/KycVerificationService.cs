@@ -57,11 +57,11 @@ public class KycVerificationService
                 documentTasks.Add(ProcessDocumentAsync(document, documentIndex, request.ModelChoice, request.ExpectedAddress, request.ConsistencyThreshold, skipGoogleMapsVerification: true));
             }
 
-            // Wait for all documents to be processed
+           
             var processedDocuments = await Task.WhenAll(documentTasks);
             documents.AddRange(processedDocuments);
 
-            // Extract addresses and names for consistency check
+           
             foreach (var doc in documents)
             {
                 addresses.Add(doc.ExtractedAddress ?? string.Empty);

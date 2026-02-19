@@ -1,27 +1,42 @@
-# QR Code Generation API
+# API Playground - Backend & Frontend
 
-A RESTful API built with ASP.NET Core 8 for generating QR codes, featuring API key authentication and an interactive playground.
+A full-stack application with a .NET 8.0 Web API backend and a React frontend for API testing and management.
+
+## Architecture
+
+- **Backend**: .NET 8.0 Web API (API-only, no static files)
+- **Frontend**: React application (Create React App) that consumes the backend API
 
 ## Features
 
 - **QR Code Generation**: Generate QR codes from text input
-- **API Key Authentication**: Secure API access with X-API-Key header
-- **Interactive Playground**: Test the API directly in your browser (no scrolling required)
-- **Multiple Code Examples**: cURL, Python, and JavaScript examples
-- **Base64 Image Response**: QR codes returned as base64-encoded PNG images
+- **File Summary**: AI-powered file summarization
+- **KYC Agent**: Document verification and KYC processing
+- **API Key Management**: Generate and manage API keys
+- **Interactive Playground**: Test all APIs directly in the browser
+- **Code Examples**: View code examples for all endpoints
 
 ## Prerequisites
 
+### Backend
 - .NET 8 SDK
 
-## Setup
+### Frontend
+- Node.js (v14 or higher)
+- npm or yarn
 
-1. **Clone or download the project**
+## Setup Instructions
 
-2. **Configure API Keys**
+### Backend Setup
 
+1. **Navigate to the project root**
+   ```bash
+   cd <project-root>
+   ```
+
+2. **Configure API Keys and Database**
+   
    Edit `appsettings.json` or `appsettings.Development.json`:
-
    ```json
    {
      "ApiKeys": {
@@ -29,189 +44,193 @@ A RESTful API built with ASP.NET Core 8 for generating QR codes, featuring API k
          "your-api-key-here",
          "another-key"
        ]
+     },
+     "ConnectionStrings": {
+       "eZApiTenantContext": "your-connection-string"
      }
    }
    ```
 
 3. **Restore Dependencies**
-
    ```bash
    dotnet restore
    ```
 
-4. **Run the Application**
-
+4. **Run the Backend**
    ```bash
    dotnet run
    ```
+   
+   The API will be available at:
+   - `https://localhost:51347` (HTTPS)
+   - `http://localhost:51348` (HTTP)
 
-   The API will be available at `https://localhost:5001` or `http://localhost:5000`
+### Frontend Setup
 
-5. **Access the Playground**
-
-   Open your browser and navigate to:
+1. **Navigate to the frontend directory**
+   ```bash
+   cd frontend
    ```
-   http://localhost:5000/index.html
+
+2. **Install Dependencies**
+   ```bash
+   npm install
    ```
 
-## API Documentation
+3. **Configure API Base URL**
+   
+   Edit `frontend/.env`:
+   ```
+   REACT_APP_API_BASE_URL=http://localhost:51348
+   ```
+   
+   Update this to match your backend URL and port.
 
-### Endpoint
+4. **Run the Frontend**
+   ```bash
+   npm start
+   ```
+   
+   The frontend will be available at `http://localhost:3000`
 
-**POST** `/api/qrcode/generate`
+## Running Both Applications
 
-### Authentication
+### Development
 
-Include the API key in the request header:
+1. **Terminal 1 - Backend:**
+   ```bash
+   cd <project-root>
+   dotnet run
+   ```
+
+2. **Terminal 2 - Frontend:**
+   ```bash
+   cd frontend
+   npm start
+   ```
+
+3. **Access the Application:**
+   - Frontend: http://localhost:3000
+   - Backend API: http://localhost:51348
+
+## API Endpoints
+
+### Generate API Key
+- **POST** `/api/Client/apiKey?userName={email}&password={password}`
+- **GET** `/api/Client/apiKey?userName={email}&password={password}`
+
+### QR Code Generation
+- **POST** `/api/qrcode/generate`
+- **Headers**: `X-API-Key: your-api-key`
+- **Body**: `{ "qrvalue": "string" }`
+
+### File Summary
+- **POST** `/api/filesummary/getSummary`
+- **Headers**: `X-API-Key: your-api-key`
+- **Body**: `multipart/form-data` with `file` and `token`
+
+### KYC Verification
+- **POST** `/api/kycagent/verify`
+- **Headers**: `X-API-Key: your-api-key`
+- **Body**: `multipart/form-data` with `documents`, `expectedAddress`, `modelChoice`, `consistencyThreshold`, optional `licenseImage`, `selfieImage`
+
+## Project Structure
+
+```
+.
+├── Controllers/              # API Controllers
+│   ├── ApiKeyController.cs
+│   ├── QrCodeController.cs
+│   ├── FileSummaryController.cs
+│   └── KycAgentController.cs
+├── Services/                 # Business Logic
+├── Middleware/               # API Key Middleware
+├── Models/                   # Data Models
+├── Program.cs               # Backend startup
+├── appsettings.json         # Backend configuration
+├── frontend/                # React Frontend
+│   ├── src/
+│   │   ├── components/      # React components
+│   │   ├── services/        # API service layer
+│   │   └── App.js          # Main app with routing
+│   ├── public/             # Static assets
+│   ├── .env                # Frontend configuration
+│   └── package.json        # Frontend dependencies
+└── wwwroot/                # Archived (original HTML files)
+```
+
+## Configuration
+
+### Backend CORS
+
+The backend is configured to allow requests from:
+- `http://localhost:3000` (React dev server)
+- `http://localhost:3001` (Alternative React port)
+
+To add more origins, edit `Program.cs`:
+```csharp
+policy.WithOrigins("http://localhost:3000", "http://localhost:3001", "your-origin")
+```
+
+### Frontend API URL
+
+Update `frontend/.env` to point to your backend:
+```
+REACT_APP_API_BASE_URL=http://localhost:51348
+```
+
+## Authentication
+
+All API endpoints (except API key generation) require an `X-API-Key` header:
 
 ```
 X-API-Key: your-api-key-here
 ```
 
-### Request Body
-
-```json
-{
-  "qrvalue": "Hello World"
-}
+Generate an API key using the API Key page in the frontend or by calling:
 ```
-
-### Response
-
-**Success Response (200 OK):**
-
-```json
-{
-  "output": "iVBORw0KGgoAAAANSUhEUgAA...",
-  "id": 1,
-  "EncryptOutput": null
-}
-```
-
-**Error Response (400 Bad Request / 500 Internal Server Error):**
-
-```json
-{
-  "output": null,
-  "id": 0,
-  "EncryptOutput": "Error message here"
-}
-```
-
-**Unauthorized Response (401 Unauthorized):**
-
-```
-Invalid API Key.
-```
-
-## Usage Examples
-
-### cURL
-
-```bash
-curl -X POST "http://localhost:5000/api/qrcode/generate" \
-  -H "Content-Type: application/json" \
-  -H "X-API-Key: your-api-key-here" \
-  -d '{"qrvalue": "Hello World"}'
-```
-
-### Python
-
-```python
-import requests
-
-url = "http://localhost:5000/api/qrcode/generate"
-headers = {
-    "Content-Type": "application/json",
-    "X-API-Key": "your-api-key-here"
-}
-data = {
-    "qrvalue": "Hello World"
-}
-
-response = requests.post(url, json=data, headers=headers)
-result = response.json()
-
-if result["id"] == 1:
-    # Decode base64 image
-    import base64
-    image_data = base64.b64decode(result["output"])
-    with open("qrcode.png", "wb") as f:
-        f.write(image_data)
-    print("QR code saved as qrcode.png")
-else:
-    print(f"Error: {result['EncryptOutput']}")
-```
-
-### JavaScript
-
-```javascript
-const response = await fetch("http://localhost:5000/api/qrcode/generate", {
-  method: "POST",
-  headers: {
-    "Content-Type": "application/json",
-    "X-API-Key": "your-api-key-here"
-  },
-  body: JSON.stringify({
-    qrvalue: "Hello World"
-  })
-});
-
-const data = await response.json();
-
-if (data.id === 1) {
-  // Display image
-  const img = document.createElement("img");
-  img.src = `data:image/png;base64,${data.output}`;
-  document.body.appendChild(img);
-} else {
-  console.error("Error:", data.EncryptOutput);
-}
-```
-
-## Project Structure
-
-```
-QRCodeAPI/
-├── Controllers/
-│   └── QrCodeController.cs      # API controller
-├── Models/
-│   └── ResultForHttpsCode.cs    # Response model
-├── Services/
-│   └── QrCodeService.cs         # QR code generation logic
-├── Middleware/
-│   └── ApiKeyMiddleware.cs      # API key authentication
-├── wwwroot/
-│   └── index.html               # Interactive playground (single page, no scroll)
-├── Program.cs                   # Application startup
-├── appsettings.json             # Configuration
-└── QRCodeAPI.csproj             # Project file
-```
-
-## Configuration
-
-### API Keys
-
-Add valid API keys in `appsettings.json`:
-
-```json
-{
-  "ApiKeys": {
-    "ValidKeys": ["key1", "key2", "key3"]
-  }
-}
+POST /api/Client/apiKey?userName={email}&password={password}
 ```
 
 ## Dependencies
 
-- **System.Drawing.Common** (8.0.0) - Image conversion
+### Backend
+- **System.Drawing.Common** (8.0.0) - Image processing
+- **Microsoft.Data.SqlClient** (5.1.1) - Database access
+- **Newtonsoft.Json** (13.0.3) - JSON processing
+- **AWSSDK.Rekognition** (3.7.400.0) - AWS Rekognition for face matching
+
+### Frontend
+- **react** - React library
+- **react-router-dom** - Routing
+- **axios** - HTTP client
+- **tailwindcss** - Styling
 
 ## Troubleshooting
+
+### CORS Errors
+
+If you see CORS errors, ensure:
+1. Backend CORS is configured for your frontend URL
+2. Frontend `.env` has the correct backend URL
+3. Both applications are running
 
 ### API Key Not Working
 
 1. Verify the API key is included in the `X-API-Key` header
-2. Check that the API key exists in `appsettings.json` under `ApiKeys:ValidKeys`
-3. Ensure the middleware is properly configured in `Program.cs`
+2. Check that the API key exists in the database (via API key generation endpoint)
+3. Ensure the middleware is properly configured
 
+### Frontend Can't Connect to Backend
 
+1. Verify backend is running and accessible
+2. Check `frontend/.env` has correct `REACT_APP_API_BASE_URL`
+3. Ensure CORS is properly configured in backend
+4. Check browser console for detailed error messages
+
+## Development Notes
+
+- The backend runs independently as a pure API
+- The frontend runs independently and makes HTTP requests to the backend
+- Both can be deployed separately
+- The `wwwroot` directory contains the original HTML files (archived for reference)

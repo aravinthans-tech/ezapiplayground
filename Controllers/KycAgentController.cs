@@ -61,15 +61,18 @@ public class KycAgentController : ControllerBase
     // }
 
     [HttpPost("verify")]
-    public async Task<ActionResult<KycVerificationResult>> VerifyKyc(
-        [FromForm] List<IFormFile> documents,
-        [FromForm] string expectedAddress,
-        [FromForm] string modelChoice = "Mistral",
-        [FromForm] double consistencyThreshold = 0.82,
-        [FromForm] IFormFile? licenseImage = null,
-        [FromForm] IFormFile? selfieImage = null)
+    [Consumes("multipart/form-data")]
+    public async Task<ActionResult<KycVerificationResult>> VerifyKyc([FromForm] KycVerificationRequest request)
     {
-        if (documents == null || documents.Count < 2)
+        if (request == null)
+        {
+            return BadRequest(new KycVerificationResult
+            {
+                StatusHtml = "❌ <b style='color:red;'>Request is required.</b>"
+            });
+        }
+
+        if (request.Documents == null || request.Documents.Count < 2)
         {
             return BadRequest(new KycVerificationResult
             {
@@ -77,7 +80,7 @@ public class KycAgentController : ControllerBase
             });
         }
 
-        if (string.IsNullOrWhiteSpace(expectedAddress))
+        if (string.IsNullOrWhiteSpace(request.ExpectedAddress))
         {
             return BadRequest(new KycVerificationResult
             {
@@ -87,16 +90,6 @@ public class KycAgentController : ControllerBase
 
         try
         {
-            var request = new KycVerificationRequest
-            {
-                Documents = documents,
-                ExpectedAddress = expectedAddress,
-                ModelChoice = modelChoice,
-                ConsistencyThreshold = consistencyThreshold,
-                LicenseImage = licenseImage,
-                SelfieImage = selfieImage
-            };
-
             var result = await _kycVerificationService.VerifyKyc(request);
             return Ok(result);
         }

@@ -29,8 +29,8 @@ RUN apt-get update --fix-missing && \
 # Copy published application
 COPY --from=publish /app/publish .
 
-# Copy static files (wwwroot)
-COPY wwwroot ./wwwroot
+# Copy static files (wwwroot) - Removed: Frontend is now separate React app
+# COPY wwwroot ./wwwroot
 
 # Copy configuration files
 COPY appsettings.json .

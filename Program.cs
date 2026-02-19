@@ -1,5 +1,8 @@
 using QRCodeAPI.Middleware;
 using QRCodeAPI.Services;
+using QRCodeAPI.Swagger;
+using Microsoft.OpenApi.Models;
+using Microsoft.AspNetCore.Mvc;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -42,34 +45,89 @@ builder.Services.AddScoped<FaceMatchingService>();
 
 builder.Services.AddScoped<KycVerificationService>();
 
-// Configure CORS
+// Configure CORS for React frontend
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("AllowAll", policy =>
+    options.AddPolicy("AllowReactApp", policy =>
     {
-        policy.AllowAnyOrigin()
+        policy.WithOrigins(
+                "http://localhost:3000", 
+                "http://localhost:3001",
+                "https://ezplaygroundapp.vercel.app",
+                "https://*.vercel.app"  // Allow all Vercel preview deployments
+              )
               .AllowAnyMethod()
-              .AllowAnyHeader();
+              .AllowAnyHeader()
+              .AllowCredentials();
     });
+});
+
+// Add Swagger/OpenAPI
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen(options =>
+{
+    options.SwaggerDoc("v1", new OpenApiInfo
+    {
+        Title = "QRCode API",
+        Version = "v1",
+        Description = "API for QR Code Generation, File Summary, and KYC Verification"
+    });
+    
+    // Add API Key authentication to Swagger
+    options.AddSecurityDefinition("ApiKey", new OpenApiSecurityScheme
+    {
+        Description = "API Key authentication using X-API-Key header. Get your API key from /api/Client/apiKey endpoint.",
+        Name = "X-API-Key",
+        In = ParameterLocation.Header,
+        Type = SecuritySchemeType.ApiKey
+    });
+    
+    // Ignore Obsolete APIs
+    options.IgnoreObsoleteActions();
+    options.IgnoreObsoleteProperties();
+    
+    // Resolve conflicting actions
+    options.ResolveConflictingActions(apiDescriptions => apiDescriptions.First());
+    
+    // Custom schema IDs to avoid conflicts
+    options.CustomSchemaIds(type => type.FullName);
+    
+    // Configure to handle form parameters correctly
+    // Note: IFormFile and Microsoft.AspNetCore.Http.IFormFile are the same type, so only map once
+    options.MapType<IFormFile>(() => new OpenApiSchema
+    {
+        Type = "string",
+        Format = "binary"
+    });
+    
+    // Add filters to fix duplicate ContentType issue with multiple IFormFile parameters
+    options.ParameterFilter<FormFileParameterFilter>();
+    options.OperationFilter<FixFormFileContentTypeFilter>();
 });
 
 var app = builder.Build();
 
 // Configure the HTTP request pipeline
-app.UseCors("AllowAll");
+app.UseCors("AllowReactApp");
 
-// Enable static files for playground
-app.UseStaticFiles();
+// Enable Swagger UI - MUST be before API key middleware
+app.UseSwagger(c =>
+{
+    c.RouteTemplate = "swagger/{documentName}/swagger.json";
+});
 
-// Add API Key middleware
+app.UseSwaggerUI(c =>
+{
+    c.SwaggerEndpoint("/swagger/v1/swagger.json", "QRCode API v1");
+    c.RoutePrefix = "swagger";
+    c.DisplayRequestDuration();
+});
+
+// Add API Key middleware (after Swagger so Swagger endpoints are accessible)
 app.UseMiddleware<ApiKeyMiddleware>();
 
 app.UseAuthorization();
 
 app.MapControllers();
 
-// Default route to API key page
-app.MapGet("/", () => Results.Redirect("/apikey.html"));
-
 app.Run();
-

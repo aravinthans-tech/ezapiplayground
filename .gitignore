@@ -203,4 +203,7 @@ FodyWeavers.xsd
 
 # License files (keep structure but ignore actual license files)
 
+# Frontend folder (separate repository)
+frontend/
+
 

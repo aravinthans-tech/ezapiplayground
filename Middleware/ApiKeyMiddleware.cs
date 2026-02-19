@@ -22,18 +22,15 @@ public class ApiKeyMiddleware
     {
         var path = context.Request.Path.Value ?? "";
         
-        // Skip API key check for playground and static files
-        if (path.StartsWith("/index.html") ||
-            path.StartsWith("/apikey.html") ||
-            path.StartsWith("/examples.html") ||
-            path.StartsWith("/filesummary.html") ||
-            path.StartsWith("/kycagent.html") ||
-            (path.StartsWith("/") && !path.StartsWith("/api")))
+        // Skip API key check for Swagger UI endpoints (must be first check)
+        if (path.StartsWith("/swagger", StringComparison.OrdinalIgnoreCase) || 
+            path.Equals("/", StringComparison.OrdinalIgnoreCase) || 
+            path.Equals("/index.html", StringComparison.OrdinalIgnoreCase))
         {
             await _next(context);
             return;
         }
-
+        
         // Skip API key check for API key generation endpoints (users need to generate API key first)
         if (path.StartsWith("/api/Client/apiKey") ||
             path.StartsWith("/api/ApiKey/apiKey"))
