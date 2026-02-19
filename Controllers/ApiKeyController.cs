@@ -1,7 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Cryptography;
 using Microsoft.Data.SqlClient;
-using Newtonsoft.Json.Linq;
 
 namespace QRCodeAPI.Controllers;
 
