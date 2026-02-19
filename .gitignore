@@ -206,4 +206,10 @@ FodyWeavers.xsd
 # Frontend folder (separate repository)
 frontend/
 
+# Configuration files with secrets (use environment variables in production)
+appsettings.json
+appsettings.Development.json
+appsettings.*.json
+!appsettings.template.json
+
 
