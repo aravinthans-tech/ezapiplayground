@@ -36,7 +36,14 @@ A full-stack application with a .NET 8.0 Web API backend and a React frontend fo
 
 2. **Configure API Keys and Database**
    
-   Edit `appsettings.json` or `appsettings.Development.json`:
+   **IMPORTANT**: Never commit `appsettings.json` with real credentials!
+   
+   Copy the template and fill in your local development values:
+   ```bash
+   cp appsettings.template.json appsettings.json
+   ```
+   
+   Then edit `appsettings.json` with your local development credentials:
    ```json
    {
      "ApiKeys": {
@@ -50,6 +57,8 @@ A full-stack application with a .NET 8.0 Web API backend and a React frontend fo
      }
    }
    ```
+   
+   Note: `appsettings.json` is in `.gitignore` and will NOT be committed to Git.
 
 3. **Restore Dependencies**
    ```bash
@@ -158,6 +167,29 @@ A full-stack application with a .NET 8.0 Web API backend and a React frontend fo
 │   └── package.json        # Frontend dependencies
 └── wwwroot/                # Archived (original HTML files)
 ```
+
+## ⚠️ Security Warning
+
+**NEVER commit sensitive credentials to Git!**
+
+This repository has been configured to exclude sensitive files:
+- `appsettings.json` - Contains API keys, connection strings, and secrets
+- `appsettings.Development.json` - Development-specific secrets
+
+### For Local Development:
+1. Copy `appsettings.template.json` to `appsettings.json`
+2. Fill in your actual credentials (these will NOT be committed to Git)
+3. Never commit `appsettings.json` or `appsettings.Development.json`
+
+### For Production (Render):
+All sensitive values must be set as **Environment Variables** in the Render dashboard. See the deployment section below.
+
+### If Credentials Were Exposed:
+If you've accidentally committed sensitive data:
+1. **Immediately rotate/revoke all exposed keys** (AWS, Google Maps, OpenRouter, etc.)
+2. Remove the file from Git history (see below)
+3. Update all environment variables in production
+4. Never commit sensitive data again
 
 ## Configuration
 
